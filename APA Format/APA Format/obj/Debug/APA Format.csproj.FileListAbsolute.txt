@@ -1,0 +1,10 @@
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\bin\Debug\APA Format.exe.config
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\bin\Debug\APA Format.exe
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\bin\Debug\APA Format.pdb
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA Format.csprojResolveAssemblyReference.cache
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA_Format.Form1.resources
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA_Format.Properties.Resources.resources
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA Format.csproj.GenerateResource.Cache
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA Format.csproj.CoreCompileInputs.cache
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA Format.exe
+C:\Users\joshu\Google Drive\Programming Projects\Visual Studio\APA Format\APA Format\obj\Debug\APA Format.pdb
