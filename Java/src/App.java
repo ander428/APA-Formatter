@@ -1,15 +1,27 @@
+import javax.activation.DataHandler;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.rtf.RTFEditorKit;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.validator.UrlValidator;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class App
 {
@@ -124,6 +136,7 @@ public class App
 	String datePattern = "(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[012])/((19|20)\\\\d\\\\d)"; //checks for a valid date
 
 	public App() {
+		richTextBox1.setContentType("text/html");
 
 		btnClear.addActionListener(new ActionListener() {
 			@Override
@@ -149,6 +162,10 @@ public class App
 				if (!errors.equals("Invalid Inputs:")) JOptionPane.showMessageDialog(null, errors);
 
 				errors = "Invalid Inputs:";
+
+				getClipboardContents();
+				richTextBox1.setVisible(true);
+				System.out.println(richTextBox1.getText());
 			}
 		});
 		comboBox1.addActionListener(new ActionListener() {
@@ -162,20 +179,47 @@ public class App
 		});
 	}
 
+	public String getClipboardContents() {
+		String result = "";
+		Clipboard clipboard = new Clipboard("");
+		if (clipboard != null){
+			//odd: the Object param of getContents is not currently used
+			Transferable contents = clipboard.getContents(null);
+			boolean hasTransferableText =
+					(contents != null) &&
+							contents.isDataFlavorSupported(DataFlavor.stringFlavor);
+			if ( hasTransferableText ) {
+				try {
+					result = (String)contents.getTransferData(DataFlavor.stringFlavor);
+				}
+				catch (UnsupportedFlavorException ex){
+					//highly unlikely since we are using a standard DataFlavor
+					System.out.println(ex);
+					ex.printStackTrace();
+				}
+				catch (IOException ex) {
+					System.out.println(ex);
+					ex.printStackTrace();
+				}
+			}
+		}
+		return result;
+	}
+
 	private void onComboBoxChanged()
 	{
 		//changes controls appearance for Website
 		if (comboBox1.getSelectedIndex() == 1)
 		{
-			lblDate.setForeground(Color.GREEN);
-			lblDay.setForeground(Color.GREEN);
-			lblMonth.setForeground(Color.GREEN);
-			lblYear.setForeground(Color.GREEN);
+			lblDate.setForeground(Color.decode("#29a329"));
+			lblDay.setForeground(Color.decode("#29a329"));
+			lblMonth.setForeground(Color.decode("#29a329"));
+			lblYear.setForeground(Color.decode("#29a329"));
 
-			lblFirst.setForeground(Color.ORANGE);
-			lblMI.setForeground(Color.ORANGE);
-			lblLast.setForeground(Color.GREEN);
-			lblArticle.setForeground(Color.ORANGE);
+			lblFirst.setForeground(Color.decode("#ffb366"));
+			lblMI.setForeground(Color.decode("#ffb366"));
+			lblLast.setForeground(Color.decode("#29a329"));
+			lblArticle.setForeground(Color.decode("#ffb366"));
 
 			lblCity.setForeground(Color.RED);
 			lblState.setForeground(Color.RED);
@@ -185,10 +229,10 @@ public class App
 			lblPages.setForeground(Color.RED);
 			lblPara.setForeground(Color.RED);
 
-			updateGroup(grpURL, "URL", Color.GREEN);
-			updateGroup(grpTitle, "Source Info", Color.GREEN);
-			updateGroup(grpAuthor, "Website/Article Contributors:", Color.GREEN);
-			updateGroup(grpPublisher, "Publisher: ", Color.GREEN);
+			updateGroup(grpURL, "URL", Color.decode("#29a329"));
+			updateGroup(grpTitle, "Source Title", Color.decode("#29a329"));
+			updateGroup(grpAuthor, "Website/Article Contributors:", Color.decode("#29a329"));
+			updateGroup(grpPublisher, "Publisher: ", Color.decode("#29a329"));
 
 			lblDate.setText("Last Edited:");
 
@@ -202,26 +246,26 @@ public class App
 
 			if (resultBook != JOptionPane.CANCEL_OPTION)
 			{
-				lblDate.setForeground(Color.GREEN);
+				lblDate.setForeground(Color.decode("#29a329"));
 				lblMonth.setForeground(Color.RED);
 				lblDay.setForeground(Color.RED);
-				lblYear.setForeground(Color.GREEN);
+				lblYear.setForeground(Color.decode("#29a329"));
 
-				lblFirst.setForeground(Color.GREEN);
-				lblMI.setForeground(Color.ORANGE);
-				lblLast.setForeground(Color.GREEN);
+				lblFirst.setForeground(Color.decode("#29a329"));
+				lblMI.setForeground(Color.decode("#ffb366"));
+				lblLast.setForeground(Color.decode("#29a329"));
 				lblArticle.setForeground(Color.RED);
 
 				lblSubSection.setForeground(Color.RED);
 				lblPages.setForeground(Color.RED);
 				lblPara.setForeground(Color.RED);
 
-				updateGroup(grpAuthor, "Author:", Color.GREEN);
-				updateGroup(grpTitle, "Source Info", Color.GREEN);
+				updateGroup(grpAuthor, "Author:", Color.decode("#29a329"));
+				updateGroup(grpTitle, "Source Title", Color.decode("#29a329"));
 
 				if (resultBook == JOptionPane.YES_OPTION)
 				{
-					updateGroup(grpURL, "URL", Color.GREEN);
+					updateGroup(grpURL, "URL", Color.decode("#29a329"));
 					updateGroup(grpPublisher, "Publisher: ", Color.RED);
 					lblPublisher.setForeground(Color.RED);
 					lblCity.setForeground(Color.RED);
@@ -231,10 +275,10 @@ public class App
 				else if (resultBook == JOptionPane.NO_OPTION)
 				{
 					updateGroup(grpURL, "URL", Color.RED);
-					updateGroup(grpPublisher, "Publisher: ", Color.GREEN);
-					lblPublisher.setForeground(Color.GREEN);
-					lblCity.setForeground(Color.GREEN);
-					lblState.setForeground(Color.GREEN);
+					updateGroup(grpPublisher, "Publisher: ", Color.decode("#29a329"));
+					lblPublisher.setForeground(Color.decode("#29a329"));
+					lblCity.setForeground(Color.decode("#29a329"));
+					lblState.setForeground(Color.decode("#29a329"));
 				}
 
 				lblDate.setText("Enter Year Published:");
@@ -253,27 +297,27 @@ public class App
 			if (resultBook != JOptionPane.CANCEL_OPTION)
 			{
 
-				lblDate.setForeground(Color.GREEN);
+				lblDate.setForeground(Color.decode("#29a329"));
 				lblMonth.setForeground(Color.RED);
 				lblDay.setForeground(Color.RED);
-				lblYear.setForeground(Color.GREEN);
+				lblYear.setForeground(Color.decode("#29a329"));
 
-				lblFirst.setForeground(Color.GREEN);
-				lblMI.setForeground(Color.ORANGE);
-				lblLast.setForeground(Color.GREEN);
+				lblFirst.setForeground(Color.decode("#29a329"));
+				lblMI.setForeground(Color.decode("#ffb366"));
+				lblLast.setForeground(Color.decode("#29a329"));
 				lblArticle.setForeground(Color.RED);
 
-				lblSubSection.setForeground(Color.GREEN);
-				lblPages.setForeground(Color.ORANGE);
-				lblPara.setForeground(Color.ORANGE);
+				lblSubSection.setForeground(Color.decode("#29a329"));
+				lblPages.setForeground(Color.decode("#ffb366"));
+				lblPara.setForeground(Color.decode("#ffb366"));
 
-				updateGroup(grpAuthor, "Author:", Color.GREEN);
-				updateGroup(grpTitle, "Source Info", Color.GREEN);
+				updateGroup(grpAuthor, "Author:", Color.decode("#29a329"));
+				updateGroup(grpTitle, "Source Title", Color.decode("#29a329"));
 
 
 				if (resultBook == JOptionPane.YES_OPTION)
 				{
-					updateGroup(grpURL, "URL", Color.GREEN);
+					updateGroup(grpURL, "URL", Color.decode("#29a329"));
 					updateGroup(grpPublisher, "Publisher: ", Color.RED);
 					lblPublisher.setForeground(Color.RED);
 					lblCity.setForeground(Color.RED);
@@ -283,10 +327,10 @@ public class App
 				else if (resultBook == JOptionPane.NO_OPTION)
 				{
 					updateGroup(grpURL, "URL", Color.RED);
-					updateGroup(grpPublisher, "Publisher: ", Color.GREEN);
-					lblPublisher.setForeground(Color.GREEN);
-					lblCity.setForeground(Color.GREEN);
-					lblState.setForeground(Color.GREEN);
+					updateGroup(grpPublisher, "Publisher: ", Color.decode("#29a329"));
+					lblPublisher.setForeground(Color.decode("#29a329"));
+					lblCity.setForeground(Color.decode("#29a329"));
+					lblState.setForeground(Color.decode("#29a329"));
 				}
 
 				lblDate.setText("Enter Year Published:");
@@ -303,27 +347,28 @@ public class App
 			if (resultBook != JOptionPane.CANCEL_OPTION)
 			{
 				clearForm();
-				lblDate.setForeground(Color.GREEN);
+				comboBox1.setSelectedIndex(4);
+				lblDate.setForeground(Color.decode("#29a329"));
 				lblMonth.setForeground(Color.RED);
 				lblDay.setForeground(Color.RED);
-				lblYear.setForeground(Color.GREEN);
+				lblYear.setForeground(Color.decode("#29a329"));
 
-				lblFirst.setForeground(Color.ORANGE);
-				lblMI.setForeground(Color.ORANGE);
-				lblLast.setForeground(Color.GREEN);
-				lblArticle.setForeground(Color.GREEN);
+				lblFirst.setForeground(Color.decode("#ffb366"));
+				lblMI.setForeground(Color.decode("#ffb366"));
+				lblLast.setForeground(Color.decode("#29a329"));
+				lblArticle.setForeground(Color.decode("#29a329"));
 
 				lblSubSection.setForeground(Color.RED);
-				lblPages.setForeground(Color.GREEN);
-				lblPara.setForeground(Color.GREEN);;
-				lblPara.setForeground(Color.GREEN);
+				lblPages.setForeground(Color.decode("#29a329"));
+				lblPara.setForeground(Color.decode("#29a329"));;
+				lblPara.setForeground(Color.decode("#29a329"));
 
-				updateGroup(grpAuthor, "Author:", Color.GREEN);
-				updateGroup(grpTitle, "Source Info", Color.GREEN);
+				updateGroup(grpAuthor, "Author:", Color.decode("#29a329"));
+				updateGroup(grpTitle, "Source Title", Color.decode("#29a329"));
 
 				if (resultBook == JOptionPane.YES_OPTION)
 				{
-					updateGroup(grpURL, "URL or doi #", Color.GREEN);
+					updateGroup(grpURL, "URL or doi #", Color.decode("#29a329"));
 					updateGroup(grpAuthor, "Author:", Color.RED);
 					lblPublisher.setForeground(Color.RED);
 					lblCity.setForeground(Color.RED);
@@ -332,7 +377,7 @@ public class App
 
 				else if (resultBook == JOptionPane.NO_OPTION)
 				{
-					updateGroup(grpURL, "URL or doi #", Color.ORANGE);
+					updateGroup(grpURL, "URL or doi #", Color.decode("#ffb366"));
 					updateGroup(grpAuthor, "Author:", Color.RED);
 					lblPublisher.setForeground(Color.RED);
 					lblCity.setForeground(Color.RED);
@@ -350,15 +395,15 @@ public class App
 		//changes controls appearance for Online Newspaper
 		else if (comboBox1.getSelectedIndex() == 5)
 		{
-			lblDate.setForeground(Color.GREEN);
-			lblDay.setForeground(Color.GREEN);
-			lblMonth.setForeground(Color.GREEN);
-			lblYear.setForeground(Color.GREEN);
+			lblDate.setForeground(Color.decode("#29a329"));
+			lblDay.setForeground(Color.decode("#29a329"));
+			lblMonth.setForeground(Color.decode("#29a329"));
+			lblYear.setForeground(Color.decode("#29a329"));
 
-			lblFirst.setForeground(Color.ORANGE);
-			lblMI.setForeground(Color.ORANGE);
-			lblLast.setForeground(Color.GREEN);
-			lblArticle.setForeground(Color.GREEN);
+			lblFirst.setForeground(Color.decode("#ffb366"));
+			lblMI.setForeground(Color.decode("#ffb366"));
+			lblLast.setForeground(Color.decode("#29a329"));
+			lblArticle.setForeground(Color.decode("#29a329"));
 
 			lblCity.setForeground(Color.RED);
 			lblState.setForeground(Color.RED);
@@ -368,9 +413,9 @@ public class App
 			lblPages.setForeground(Color.RED);
 			lblPara.setForeground(Color.RED);
 
-			updateGroup(grpURL, "URL", Color.GREEN);
-			updateGroup(grpTitle, "Source Info", Color.GREEN);
-			updateGroup(grpAuthor, "News Article Contributors:", Color.GREEN);
+			updateGroup(grpURL, "URL", Color.decode("#29a329"));
+			updateGroup(grpTitle, "Source Title", Color.decode("#29a329"));
+			updateGroup(grpAuthor, "News Article Contributors:", Color.decode("#29a329"));
 			updateGroup(grpPublisher, "Publisher: ", Color.RED);
 
 			lblDate.setText("Last Edited:");
@@ -390,8 +435,8 @@ public class App
 
 	private void clearForm()
 	{
-		lblGreen.setForeground(Color.GREEN);
-		lblYellow.setForeground(Color.ORANGE);
+		lblGreen.setForeground(Color.decode("#29a329"));
+		lblYellow.setForeground(Color.decode("#ffb366"));
 		lblRed.setForeground(Color.RED);
 
 		resetContainer(grpAuthor);
@@ -400,12 +445,12 @@ public class App
 		resetContainer(grpURL);
 
 		updateGroup(grpURL, "URL", Color.BLACK);
-		updateGroup(grpTitle, "Source Info", Color.BLACK);
+		updateGroup(grpTitle, "Source Title", Color.BLACK);
 		updateGroup(grpAuthor, "Website/Article Contributors:", Color.BLACK);
 		updateGroup(grpPublisher, "Publisher: ", Color.BLACK);
 
 		comboBox1.setSelectedIndex(0);
-		setRichTextBox1(richTextBox1, " ");
+		setRichTextBox1(richTextBox1, "");
 		richTextBox1.setEditable(true);
 
 		lblOR1.setText("OR");
@@ -443,8 +488,6 @@ public class App
 				JFrame frame = new JFrame("APA Formatter");
 				App app = new App();
 				frame.setContentPane(app.mainFrame);
-
-
 
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.pack();
@@ -762,8 +805,30 @@ public class App
 
 	private boolean IsUrlValid(String url)
 	{
-		String pattern = "<\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>";
-		return url.matches(pattern);
+		URL u;
+
+		try
+		{
+			u = new URL(url);
+		}
+
+		catch (MalformedURLException e)
+		{
+			JOptionPane.showMessageDialog(null, "Please format URL as:\nhttps://website.com");
+			return false;
+		}
+
+		try
+		{
+			u.toURI();
+		}
+
+		catch (URISyntaxException e)
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	//forms the state abr
@@ -773,9 +838,13 @@ public class App
 
 		if (states.contains(UppercaseFirst(state)))
 		{
-			int index = states.indexOf(state);
+			int index = states.indexOf(UppercaseFirst(state));
+			System.out.println(index);
 			formState = statesABR.get(index);
 		}
+
+		else if(state.length() == 2) formState = state.toUpperCase();
+
 		else formState = state;
 
 		return formState;
@@ -786,45 +855,45 @@ public class App
 	{
 		String citation = "";
 		boolean name1bool = false;
-		if (name1.equals(null) == false)
+		if (name1.equals("") == false)
 		{
 			citation += name1;
 			name1bool = true;
 		}
-		if (name2.equals(null) == false)
+		if (name2.equals("") == false)
 		{
 			if (name1bool) citation += "& " + name2;
 			else citation += name2;
 		}
-		if (name1.equals(null) && name2.equals(null))
+		if (name1.equals("") && name2.equals(""))
 		{
-			if (selection != 4 && !article.equals(null)) citation += article + ". ";
+			if (selection != 4 && !article.equals("")) citation += article + ". ";
 			else
 			{
 				citation += "Anonymous. ";
 				errors += "\nAuthor/Contributor";
 			}
 		}
-		if (published.equals(null) == false)
+		if (published.equals("") == false)
 		{
 			citation += published;
 		}
 
 		if (selection == 3)
 		{
-			if (chapter.equals(null) == false) citation += chapter + ". In ";
+			if (chapter.equals("") == false) citation += chapter + ". In ";
 			else errors += "\nChapter Title";
 		}
 
 		if (selection == 4 || selection == 5)
 		{
-			if (article.equals(null) == false) citation += article + ". ";
+			if (article.equals("") == false) citation += article + ". ";
 			else errors += "\nArticle Title";
 		}
 
-		if (title.equals(null) == false)
+		if (title.equals("") == false)
 		{
-			citation += title;
+			citation += italicizeHTML(title);
 			if (selection == 3) citation += ", ";
 			else citation += " ";
 		}
@@ -837,7 +906,7 @@ public class App
 	{
 		String citation = "";
 
-		if (URL.equals(null) == false)
+		if (URL.equals("") == false)
 		{
 			if (IsUrlValid(URL))
 			{
@@ -861,12 +930,12 @@ public class App
 
 		if (selection == 3)
 		{
-			if (pg1.equals(null) == false)
+			if (pg1.equals("") == false)
 			{
-				if (pg2.equals(null)) citation += "(pp. " + pg1 + "). ";
+				if (pg2.equals("")) citation += "(pp. " + pg1 + "). ";
 				else citation += "(pp. " + pg1 + "-" + pg2 + "). ";
 			}
-			else if (pg1.equals(null) && pg2.equals(null) && paragraph.equals(null) == false)
+			else if (pg1.equals("") && pg2.equals("") && paragraph.equals("") == false)
 			{
 				citation += "(para. " + paragraph + "). ";
 			}
@@ -875,20 +944,20 @@ public class App
 		else if(selection == 4)
 		{
 			//using he paragraph textbox as the volume(issue)
-			if (paragraph.equals(null) == false) citation += paragraph + ". ";
+			if (paragraph.equals("") == false) citation += paragraph + ". ";
 
-			if (pg1.equals(null) == false)
+			if (pg1.equals("") == false)
 			{
-				if (pg2.equals(null) == false) citation += pg1 + "-" + pg2 + ". ";
+				if (pg2.equals("") == false) citation += pg1 + "-" + pg2 + ". ";
 				else citation += pg1 + ". ";
 			}
 			else errors += "\nPage/Volume";
 
 		}
 
-		if (city.equals(null) == false) citation += UppercaseFirst(city) + ", ";
-		if (state.equals(null) == false) citation += stateAbrs;
-		if (publisher.equals(null) == false) citation += ": " + UppercaseFirst(publisher) + ". ";
+		if (city.equals("") == false) citation += UppercaseFirst(city) + ", ";
+		if (state.equals("") == false) citation += stateAbrs;
+		if (publisher.equals("") == false) citation += ": " + UppercaseFirst(publisher) + ". ";
 		return citation;
 	}
 
@@ -918,7 +987,9 @@ public class App
 			URL = txtURL.getText();
 			String date = txtPM.getText() + "/" + txtPD.getText() + "/" + txtPY.getText();
 			if (!date.matches(datePattern)) errors += "\nDate";
-			setRichTextBox1(richTextBox1, citation() + webCitation());
+			String result = citation() + webCitation();
+			setRichTextBox1(richTextBox1, result);
+			System.out.println(result);
 			richTextBox1.setEditable(true);
 		}
 
@@ -947,14 +1018,13 @@ public class App
 		//Journal or Chapter of a Book respectively
 		if(selection == 4 || selection == 3)
 		{
-			city = txtCity.getText();
-			publisher = txtPublisher.getText();
-			state = txtState.getText();
-			stateAbrs = formState();
-			paragraph = txtPara.getText();
-			pg1 = txtPg1.getText();
-			pg2 = txtPg2.getText();
-			chapter = txtSubSection.getText();
+				city = txtCity.getText();
+				publisher = txtPublisher.getText();
+				state = txtState.getText();
+				paragraph = txtPara.getText();
+				pg1 = txtPg1.getText();
+				pg2 = txtPg2.getText();
+				chapter = txtSubSection.getText();
 
 			if (resultBook == JOptionPane.YES_OPTION)
 			{
@@ -965,50 +1035,21 @@ public class App
 
 			else if(resultBook == JOptionPane.NO_OPTION)
 			{
-				stateAbrs = formState();
-
 				setRichTextBox1(richTextBox1, citation() + bookCitation());
 				richTextBox1.setEditable(true);
 			}
 		}
-
-		//sets text font
-		richTextBox1.setFont(new Font("Times New Roman", 12, Font.PLAIN));
-
-		//italicizes title
-		Font fnt = new Font("Times New Roman", 12,Font.ITALIC);
-		if (richTextBox1.getText().contains(title))
-		{
-			int my1stPosition = richTextBox1.getText().indexOf(title);
-			StyledDocument doc = richTextBox1.getStyledDocument();
-
-			Style style = richTextBox1.addStyle("Red", null);
-			StyleConstants.setForeground(style, Color.red);
-
-			// Inherits from "Red"; makes text red and underlined
-			style = richTextBox1.addStyle("Red Underline", style);
-			StyleConstants.setUnderline(style, true);
-		}
 	}
 
-	private void setRichTextBox1(JTextPane textPane, String input)
+	private void setRichTextBox1(JEditorPane textPane, String input)
 	{
-		StyledDocument doc = textPane.getStyledDocument();
+		textPane.setText("<html><body>" + input + "</body></html>");
+		enlargeFont();
+	}
 
-//  Define a keyword attribute
-
-		SimpleAttributeSet keyWord = new SimpleAttributeSet();
-		StyleConstants.setForeground(keyWord, Color.RED);
-		StyleConstants.setBackground(keyWord, Color.YELLOW);
-		StyleConstants.setBold(keyWord, true);
-
-//  Add some text
-
-		try
-		{
-			doc.insertString(0, input, null );
-		}
-		catch(Exception e) { System.out.println(e); }
+	private String italicizeHTML(String input)
+	{
+		return "<i>" + input + "</i>";
 	}
 
 	private void updateGroup(JPanel grp, String title, Color color)
@@ -1016,6 +1057,23 @@ public class App
 		Border temp = BorderFactory.createEtchedBorder();
 		TitledBorder border = new TitledBorder(temp,title,TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,color);
 		grp.setBorder(border);
+	}
+
+	private void enlargeFont()
+	{
+		StyledDocument doc;
+		Style fontSize;
+
+		doc = richTextBox1.getStyledDocument();
+
+
+		fontSize = doc.addStyle("fontSize", null);
+		StyleConstants.setFontSize(fontSize, 14);
+
+
+		//Setting the font Size
+		doc.setCharacterAttributes(0, doc.getLength(), fontSize, false);
+
 	}
 
 
