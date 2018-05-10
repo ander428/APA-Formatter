@@ -17,8 +17,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.validator.UrlValidator;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -764,6 +763,10 @@ public class App
 			{
 				published = "(n.d.). ";
 			}
+			else if (day.length() == 0 && month.length() == 0 && year.length() > 0)
+			{
+				published = "(" + year + "). ";
+			}
 			else errors += "\nDate";
 		}
 
@@ -778,7 +781,7 @@ public class App
 			{
 				published = "(n.d.). ";
 			}
-			//else errors += "\nDate";
+			else errors += "\nDate";
 		}
 	}
 
@@ -986,7 +989,6 @@ public class App
 		{
 			URL = txtURL.getText();
 			String date = txtPM.getText() + "/" + txtPD.getText() + "/" + txtPY.getText();
-			if (!date.matches(datePattern)) errors += "\nDate";
 			String result = citation() + webCitation();
 			setRichTextBox1(richTextBox1, result);
 			System.out.println(result);

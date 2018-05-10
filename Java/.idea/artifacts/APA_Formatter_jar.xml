@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="APA Formatter:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/APA_Formatter_jar</output-path>
+    <root id="archive" name="APA Formatter.jar">
+      <element id="module-output" name="APA Formatter" />
+      <element id="extracted-dir" path="$APPLICATION_HOME_DIR$/lib/jgoodies-forms.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
